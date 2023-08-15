@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'services.dart';
 
@@ -13,6 +14,7 @@ class WeatherScreen extends StatefulWidget {
 class _WeatherScreenState extends State<WeatherScreen> {
   final WeatherService _weatherService = WeatherService();
   String cityName = '';
+  int celcius = 0;
   Map<String, dynamic> currentWeather = {};
   List<Map<String, dynamic>> hourlyWeather = [];
 
@@ -23,6 +25,8 @@ class _WeatherScreenState extends State<WeatherScreen> {
   }
 
   Future<void> _fetchLocationAndWeather() async {
+    final permission = Permission.location;
+    await permission.request();
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.low);
     List<Placemark> placemarks =
@@ -39,9 +43,12 @@ class _WeatherScreenState extends State<WeatherScreen> {
     try {
       var data = await _weatherService.fetchWeather(city);
       //var hourlyData = await _weatherService.fetchHourlyWeather(city); // eklenmesi gerekiyor.
-
+      currentWeather = data;
+      double deger = currentWeather['main']['temp'];
+      int int1 = deger.toInt();
       setState(() {
-        currentWeather = data;
+        celcius = int1 - 273;
+
         //hourlyWeather = hourlyData; eklenmesi gerekiyor.
       });
     } catch (e) {
@@ -98,7 +105,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
                                 style: TextStyle(fontSize: 20),
                               ),
                               Text(
-                                '${currentWeather['main']['temp']} °C',
+                                '${celcius.toString()}°C',
                                 style: TextStyle(fontSize: 32),
                               ),
                             ],
